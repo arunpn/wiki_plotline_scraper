@@ -2,6 +2,8 @@ from wiki_plotline_scraper.items import WikiPlotlineItem
 from HTMLParser import HTMLParser
 from scrapy.selector import HtmlXPathSelector
 
+import unicodedata
+
 class PlotlineParser():
 
     def __init__(self, response):
@@ -31,20 +33,31 @@ class PlotlineParser():
 
         hxs = HtmlXPathSelector(self.response)
         pitem = WikiPlotlineItem()
-        pitem['film'] = hxs.select('//table[contains(@class, "infobox vevent")]//th[contains(@class, "summary")]/text()').extract()
+        film = hxs.select('//table[contains(@class, "infobox vevent")]//th[contains(@class, "summary")]/text()').extract()
         
+        if len(film) > 0:
+            pitem['film'] = film[0]
+        else:
+            split_url = self.response.url.split('/')
+            split_name = split_url[len(split_url) - 1].split('(')
+            pitem['film'] = split_name[0]
+
+        print pitem['film']
+
         outds = {'text':''}
 
         parser = MyHTMLParser(outds)
         data = ''
         flag = False
         for line in self.response.body.split('\n'):
-            if line.find('<h2><span') != -1:
+            if (flag == False) and (line.find('class="mw-headline"') != -1):
                 flag = True
                 continue
-            if flag == True:
-                if line.find('<h2>') != -1: break
-                data += clean_parsed_string(line)
+            elif (flag == True) and (line.find('<h2>') == -1):
+                data += line
+            elif (flag == True) and (line.find('<h2>') != -1):
+                break
+
 
         parser.feed(data)
 
