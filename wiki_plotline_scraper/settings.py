@@ -22,4 +22,4 @@ MONGODB_DB = 'wiki_plotlines'
 MONGODB_COLLECTION = 'master'
 
 # Input file as [['film':'film-name', 'year':film-year],...] json file
-MOVIES_FILE = '/home/bharani/code/movies.json'
+MOVIES_FILE = './movies.json'
